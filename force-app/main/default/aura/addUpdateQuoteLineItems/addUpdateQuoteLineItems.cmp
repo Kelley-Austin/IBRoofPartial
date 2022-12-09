@@ -1,0 +1,375 @@
+<aura:component controller="AddUpdateQuoteLineItemController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickAction" access="global" >
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="opptyRecordId" type="Id"/>
+    <aura:attribute name="spinnerQLI" type="Boolean"/>
+    <aura:attribute name="spinnercustomPdc" type="Boolean" default="false"/>
+    <aura:attribute name="showEditIcon" type="Boolean" default="true"/>
+    <aura:attribute name="showSaveIcon" type="Boolean" default="false"/>
+    <aura:attribute name="hasNonCustomBlock" type="Boolean" default="true"/>
+    <aura:attribute name="accountName" type="String" />
+    <aura:attribute name="projectId" type="String" />
+    <aura:attribute name="pNameSearchValue" type="String" />
+    <aura:attribute name="skuSearchValue" type="String" />
+    <aura:attribute name="localTaxRate" type="String" />
+    <aura:attribute name="shippingAdd" type="String" />
+    <aura:attribute name="quoteItems" type="List"/>
+    <aura:attribute name="finalQuoteItems" type="List"/>
+    <aura:attribute name="totalWeight" type="String"/>
+    <aura:attribute name="totalPrice" type="String"/>
+    <aura:attribute name="productList" type="List"/>
+    <aura:attribute name="productTypeList" type="String[]"/>
+    <aura:attribute name="productNameList" type="String[]"/>
+    <aura:attribute name="productThicknessList" type="String[]"/>
+    <aura:attribute name="productColorList" type="String[]"/>
+    <aura:attribute name="productSizeList" type="String[]"/>
+    <aura:attribute name="selectedProductType" type="List"/>
+    <aura:attribute name="productDetailsToStore" type="List"/>
+    <aura:attribute name="isSelectQuote" type="Boolean" default="true"/>
+    <aura:attribute name="isSaveQuote" type="Boolean" default="false"/>
+    <aura:attribute name="fileToBeUploaded" type="Object[]"/>
+    <aura:attribute name="fileName" type="String"/>
+    <aura:attribute name="fileContent" type="String"/>
+    <aura:attribute name="showFileName" type="Boolean" default="false"/>
+    <aura:attribute name="pType" type="String"/>
+    <aura:attribute name="img" type="String"/>
+    <aura:attribute name="columns" type="Integer"/>
+    <aura:attribute name="customTableColumns" type="Integer"/>
+    <aura:attribute name="CustomFindProductFields" type="List"/>
+    <aura:attribute name="labelPosition" type="String"/>
+    <aura:attribute name="findProductObject" type="Object" default="{}"/>
+    <aura:attribute name="customAddProductFields" type="List"/>
+    <aura:attribute name="hasCustomProducts" type="Boolean" default="false"/>
+    <aura:attribute name="showResult" type="Boolean" default="false"/>
+    <aura:attribute name="customProductList" type="List"/>
+    <aura:attribute name="searchResult" type="Object" default="{}"/>
+    <lightning:workspaceAPI aura:id="workspace"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    
+    <lightning:card>
+        <div class="slds-box" style="display:block;width:95vw;margin:0 auto;">
+            <div style="display:flex; width:100%; justify-content:space-between;">
+                <div>
+                    <h2 class="header"><b>Quote Items</b></h2>
+                </div>
+            </div>
+            <div class="slds-m-top_small">
+                <lightning:spinner alternativeText="Loading" size="medium" class="{!v.spinnerQLI? 'slds-show' : 'slds-hide'}"/>
+                <table>
+                    <tr class="slds-theme_shade slds-border_top slds-border_bottom">
+                        <lightning:layout class="layoutContainer">
+                            <lightning:layoutItem size="1" class="tbHr">PRODUCT SKU</lightning:layoutItem>
+                            <lightning:layoutItem size="2" class="tbHr">PRODUCT NAME</lightning:layoutItem>
+                            <lightning:layoutItem size="1" class="tbHr">COLOR</lightning:layoutItem>
+                            <lightning:layoutItem size="1" class="tbHr">SIZE</lightning:layoutItem>
+                            <lightning:layoutItem size="1" class="tbHr">WEIGHT(LBS)</lightning:layoutItem>
+                            <lightning:layoutItem size="1" class="tbHr">PACKAGE</lightning:layoutItem>
+                            <lightning:layoutItem size="2" class="tbHr">SPECIAL NOTES</lightning:layoutItem>
+                            <lightning:layoutItem size="1" class="tbHr">QUANTITY</lightning:layoutItem>
+                            <lightning:layoutItem size="1" class="tbHr">SALES PRICE</lightning:layoutItem>
+                            <lightning:layoutItem size="1"></lightning:layoutItem>
+                        </lightning:layout>
+                    </tr>
+                    <aura:iteration items="{!v.quoteItems}" var="item" indexVar="sNo">
+                        <tr class="prdrow slds-border_bottom">
+                            <lightning:layout class="layoutContainer">
+                                <lightning:layoutItem size="1" class="item">
+                                    {!item.Product2.ProductCode}
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="2" class="item">
+                                    {!item.Product2.Name}
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="1" class="item">
+                                    {!item.Product2.Color_2__c}
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="1" >
+                                    {!item.Product2.Product_Size_2__c}
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="1" class="item">
+                                    {!item.Product2.Weight_lbs_2__c}
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="1" >
+                                    {!item.Product2.Package_2__c}
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="2">
+                                    <div style="padding-right:4px;">
+                                        <lightning:input aura:id="specialNotes" name="{!sNo}" class="{!item.Product2Id}" value="{!item.Description}" variant="label-hidden" disabled="true"/>
+                                    </div>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="1">
+                                    <div style="padding-right:4px;">
+                                        <lightning:input aura:id="quantity" type="number" name="{!sNo}" class="{!item.Product2Id}" value="{!item.Quantity}" variant="label-hidden" disabled="true" required="true"/>
+                                    </div>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="1">
+                                    <div style="padding-right:4px;">
+                                        <lightning:input aura:id="unitprice" type="number" name="{!sNo}" class="{!item.Product2Id}" value="{!item.UnitPrice}"  formatter="currency" variant="label-hidden" step="0.01" disabled="true"/>
+                                    </div>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="1">
+                                    <div style="display:flex">
+                                        <lightning:buttonIcon iconName="utility:delete"
+                                                              variant="bare"
+                                                              size="small"
+                                                              name="{!sNo}"
+                                                              value="{!item.Product2.Family}"
+                                                              onclick="{!c.removeQLI}"
+                                                              class="slds-m-horizontal_small"/>
+                                        <lightning:buttonIcon iconName="utility:check"
+                                                              variant="bare"
+                                                              size="small"
+                                                              aura:id="checkIcon"
+                                                              name="{!sNo}"
+                                                              value="{!item.Id}"
+                                                              onclick="{!c.saveQLI}"
+                                                              class="slds-hide"/>
+                                        <lightning:buttonIcon iconName="utility:edit"
+                                                              variant="bare"
+                                                              size="small"
+                                                              aura:id="editIcon"
+                                                              name="{!sNo}"
+                                                              value="{!item.Id}"
+                                                              onclick="{!c.editQLI}"
+                                                              class="slds-show"/>
+                                    </div>
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                        </tr>
+                    </aura:iteration>
+                </table>
+            </div>
+        </div>
+        
+        <div class="slds-box slds-m-bottom_small" style="display:block;width:95vw;margin:16px auto;">
+            <div>
+                <div class="slds-m-bottom_small">
+                    <h2 class="header"><b>Products</b></h2>
+                </div>
+                <div class="slds-theme_shade" style="height:32px; padding-left:8px">
+                    <p style="font-size:16px;">Search</p>
+                </div>
+                <lightning:layout class="layoutContainer">
+                    <lightning:layoutItem size="3" class="slds-m-right_small">
+                        <lightning:combobox aura:id="productFamily" name="productFamily" label="Product Type" placeholder="Select an Option" options="{!v.productTypeList }" onchange="{! c.handlePdcTypeSelected }" dropdownAlignment="auto"/>
+                    </lightning:layoutItem>
+                    <aura:if isTrue="{!v.hasNonCustomBlock}">
+                        <lightning:layoutItem size="2" class="slds-m-right_small">
+                            <lightning:combobox aura:id="productName" name="productName" label="Product Name" placeholder="Select an Option" options="{! v.productNameList }" onchange="{! c.handleOptionChange }" dropdownAlignment="auto"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="1" class="slds-m-right_small">
+                            <lightning:combobox aura:id="productThickness" name="productThickness" label="Thickness" placeholder="Select an Option" options="{! v.productThicknessList }" onchange="{! c.handleOptionChange }" dropdownAlignment="auto"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="1" class="slds-m-right_small">
+                            <lightning:combobox  aura:id="productColor" name="productColor" label="Color" placeholder="Select an Option" options="{! v.productColorList }" onchange="{! c.handleOptionChange }" dropdownAlignment="auto"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="1" class="slds-m-right_small">
+                            <lightning:combobox  aura:id="productSize" name="productSize" label="Size" placeholder="Select an Option" options="{! v.productSizeList }" onchange="{! c.handleOptionChange }" dropdownAlignment="auto"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="3" class="abc">
+                            <lightning:layout>
+                                <lightning:layoutItem size="8" class="slds-m-right_small">
+                                    <lightning:input aura:id="skuSearch" name="skuSearch" value ="{!v.skuSearchValue}" label="SKU"/>
+                                </lightning:layoutItem>
+                                <div style="align-self:end;">
+                                    <lightning:layoutItem size="4" class="slds-m-right_small">
+                                        <lightning:button class="searchBtn" aura:id="skuSearchBtn" name="skuSearchBtn"  label="Search" variant="brand" onclick="{!c.searchSKU}"/>
+                                    </lightning:layoutItem>
+                                </div>
+                            </lightning:layout>
+                            <lightning:layout>
+                                <lightning:layoutItem size="8" class="slds-m-right_small">
+                                    <lightning:input aura:id="pNameSearch" name="pNameSearch" value ="{!v.pNameSearchValue}" label="Product Name"/>
+                                </lightning:layoutItem>
+                                <div style="align-self:end;">
+                                    <lightning:layoutItem size="4" class="slds-m-right_small">
+                                        <lightning:button class="pNameSearch" aura:id="pNameSearchBtn" name="pNameSearchBtn"  label="Search" variant="brand" onclick="{!c.searchSKU}"/>
+                                    </lightning:layoutItem>
+                                </div>
+                            </lightning:layout>
+                        </lightning:layoutItem>
+                    </aura:if>
+                </lightning:layout>
+            </div>
+            <div class="slds-m-top_medium">
+                <div class="slds-theme_shade slds-m-bottom_medium" style="height:32px; padding-left:8px">
+                    <p style="font-size:16px;">Result</p>
+                </div>
+                <aura:if isTrue="{!v.showResult}">
+                <aura:if isTrue="{!v.hasNonCustomBlock}">
+                    <div>
+                        <aura:iteration items="{!v.productList}" var="product" indexVar="sNo">
+                            <div class="slds-box slds-box_x-small slds-m-bottom_small">
+                                <table>
+                                    <tr class="slds-theme_shade slds-border_top slds-border_bottom">
+                                        <lightning:layout class="layoutContainer" multipleRows="true">
+                                            <lightning:layoutItem size="1" class="tbHr">PRODUCT SKU</lightning:layoutItem>
+                                            <lightning:layoutItem size="3" class="tbHr slds-p-left_medium">PRODUCT NAME</lightning:layoutItem>
+                                            <lightning:layoutItem size="1" class="tbHr">COLOR</lightning:layoutItem>
+                                            <lightning:layoutItem size="1" class="tbHr">SIZE</lightning:layoutItem>
+                                            <lightning:layoutItem size="1" class="tbHr">THICKNESS</lightning:layoutItem>
+                                            <lightning:layoutItem size="1" class="tbHr">WEIGHT(LBS)</lightning:layoutItem>
+                                            <lightning:layoutItem size="1" class="tbHr">COVERAGE(SQ FT)</lightning:layoutItem>
+                                            <lightning:layoutItem size="1" class="tbHr slds-p-left_small">PACKAGE</lightning:layoutItem>
+                                            <lightning:layoutItem size="1" class="tbHr">LIST EACH</lightning:layoutItem>
+                                            <lightning:layoutItem size="1" ></lightning:layoutItem>
+                                        </lightning:layout>
+                                    </tr>
+                                    <tr class="prdrow">
+                                        <div class="slds-border_top" aura:id="abs" >
+                                            <lightning:layout class="layoutContainer" multipleRows="true">
+                                                <lightning:layoutItem size="1" class="item">
+                                                    {!product.Product2.ProductCode}
+                                                </lightning:layoutItem>
+                                                <lightning:layoutItem size="3" class="item slds-p-left_medium">
+                                                    {!product.Product2.Name}
+                                                </lightning:layoutItem>
+                                                <lightning:layoutItem size="1" class="item" aura:id="clr">
+                                                    {!product.Product2.Color_2__c}
+                                                </lightning:layoutItem>
+                                                <lightning:layoutItem size="1" class=" item">
+                                                    {!product.Product2.Product_Size_2__c}
+                                                </lightning:layoutItem>
+                                                <lightning:layoutItem size="1" class="item">
+                                                    {!product.Product2.Thickness_2__c}
+                                                </lightning:layoutItem>
+                                                <lightning:layoutItem size="1" class="item">
+                                                    {!product.Product2.Weight_lbs_2__c}
+                                                </lightning:layoutItem>
+                                                <lightning:layoutItem size="1" class="item">
+                                                    {!product.Product2.Coverage__c}
+                                                </lightning:layoutItem>
+                                                <lightning:layoutItem size="1" class="item  slds-p-left_small">
+                                                    {!product.Product2.Package_2__c}
+                                                </lightning:layoutItem>
+                                                <lightning:layoutItem size="1" class="item">
+                                                    <lightning:formattedNumber value="{!product.ListPrice}" style="currency" currencyCode="USD"/>
+                                                </lightning:layoutItem>
+                                                <lightning:layoutItem size="1">
+                                                    <lightning:button value="{!product.Product2.Family}" class="addBtn" name="{!sNo}" label="Add" variant="neutral" onclick="{!c.addProduct}"/>
+                                                </lightning:layoutItem>
+                                            </lightning:layout>
+                                        </div>
+                                    </tr>
+                                    <tr class="prdrow">
+                                        <div aura:id="abs" >
+                                            <lightning:layout class="subLayoutContainer">
+                                                <lightning:layoutItem size="4" class="item slds-p-right_small">
+                                                    <lightning:input aura:id="specialNotesB" label="SPECIAL NOTES" name="{!sNo}"/>
+                                                </lightning:layoutItem>
+                                                <lightning:layoutItem size="2" class="item slds-p-right_small">
+                                                    <lightning:input type="number" aura:id="quantityB" label="QUANTITY" name="{!sNo}" required="true"/>
+                                                </lightning:layoutItem>
+                                                <lightning:layoutItem size="2" class="item slds-p-right_small">
+                                                    <lightning:input type="number" aura:id="unitpriceB" label="SALES PRICE" value="{!product.UnitPrice}" formatter="currency" step="0.01" name="{!sNo}"/>
+                                                </lightning:layoutItem>
+                                            </lightning:layout>
+                                        </div>
+                                    </tr>
+                                </table>
+                            </div>
+                        </aura:iteration>
+                    </div>
+                    <aura:set attribute="else">
+                        <div style="display:flex; justify-content:space-around;">
+                            <div>
+                                <img src="{!v.img}" alt="custom product" style="max-width:100%; width:320px; height:auto;"/>
+                            </div>
+                            <div class="slds-box slds-box_xx-small" style="width:640px; border: 1.5px solid black;">
+                                <div style="witdh:100%; text-align:center; background-color:#eab38a; height:auto;">
+                                    <h1 style="padding:8px 0; font-size: 16px;"><b>{!v.pType}</b></h1>
+                                </div>
+                                <lightning:layout multipleRows="true" class="slds-m-top_small">
+                                    <aura:iteration items="{!v.CustomFindProductFields}" var="field" indexVar="sNo">
+                                        <aura:if isTrue="{!field.hasPickListValues}">
+                                            <lightning:layoutItem size="{!v.columns}">
+                                                <lightning:combobox aura:id="cusInput" name="{!field.Field_API_Name__c}" label="{!field.Name}" placeholder="Select an Option" options="{!field.Picklist_Values__c}" onchange="{!c.handleCustomProductInput}" dropdownAlignment="auto" variant="{!v.labelPosition}" class="customIn" required="{!field.Required__c}"/>
+                                            </lightning:layoutItem>
+                                            <aura:set attribute="else">
+                                                <lightning:layoutItem size="{!v.columns}">
+                                                    <lightning:input aura:id="cusInput" type="text" name="{!field.Field_API_Name__c}" label="{!field.Name}" variant="{!v.labelPosition}" class="customIn" onchange="{!c.handleCustomProductInput}" disabled="{!field.Read_Only__c}" required="{!field.Required__c}"></lightning:input>
+                                                </lightning:layoutItem>
+                                            </aura:set>
+                                        </aura:if>
+                                    </aura:iteration>
+                                </lightning:layout>
+                                <div style="witdh:100%; text-align:center; height:auto; padding:16px 0;">
+                                    <lightning:button name="{!sNo}" label="Find Product" variant="brand" onclick="{!c.handleFindCustomProduct}" disabled="false"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <lightning:spinner alternativeText="Loading" size="medium" class="{!v.spinnercustomPdc? 'slds-show' : 'slds-hide'}"/>
+                            <aura:if isTrue="{!v.hasCustomProducts}">
+                                <aura:iteration items="{!v.customProductList}" var="cpdc" indexVar="pdNo">
+                                    <div class="slds-box slds-box_x-small slds-m-vertical_small" style="border:1px solid #937f7f;">
+                                        <table>
+                                            <tr aura:id="productRow">    
+                                                <div>
+                                                    <lightning:layout multipleRows="true">
+                                                        <aura:iteration items="{!cpdc.standPdc}" var="item" indexVar="colNo">
+                                                            <lightning:layoutItem size="{!v.customTableColumns}">
+                                                                <div style="display:grid;" class="prdrow">
+                                                                    <div class="slds-theme_shade slds-p-vertical_xx-small tbHr slds-border_top slds-border_bottom">{!item.Name}</div>
+                                                                    <td class="slds-p-right_xx-small slds-m-vertical_x-small">
+                                                                        <aura:if isTrue="{!item.Read_Only__c}">
+                                                                            <span style="color:rgb(3, 45, 96);">{!item.value}</span>
+                                                                            <aura:set attribute="else">
+                                                                                <lightning:input type="{!item.type}"
+                                                                                                 aura:id="rowCol"
+                                                                                                 value="{!item.value}"
+                                                                                                 label="{!pdNo}"
+                                                                                                 name="{!item.Field_API_Name__c}"
+                                                                                                 variant="label-hidden"
+                                                                                                 readonly="{!item.Read_Only__c}"
+                                                                                                 required="{!item.Required__c}"
+                                                                                                 formatter="{!item.formatter}"
+                                                                                                 step="{!item.step}"
+                                                                                                 class="item">
+                                                                                </lightning:input>
+                                                                            </aura:set>
+                                                                        </aura:if> 
+                                                                    </td>
+                                                                </div>
+                                                            </lightning:layoutItem>
+                                                        </aura:iteration>
+                                                    </lightning:layout>
+                                                    <div style="display:grid; grid-template-columns: 1.5fr 1.5fr 1.5fr 1.5fr 1.5fr;" class="prdrow">
+                                                        <aura:iteration items="{!cpdc.cusPdc}" var="item" indexVar="colNo">
+                                                            <div style="display:flex; flex-direction:column;">
+                                                                <td class="slds-p-right_xx-small">
+                                                                    <lightning:input type="{!item.type}"
+                                                                                     aura:id="rowCol"
+                                                                                     value="{!item.value}"
+                                                                                     label="{!item.Name}"
+                                                                                     name="{!pdNo}"
+                                                                                     readonly="{!item.Read_Only__c}"
+                                                                                     required="{!item.Required__c}"
+                                                                                     formatter="{!item.formatter}"
+                                                                                     step="{!item.step}">
+                                                                    </lightning:input>
+                                                                </td>
+                                                            </div>
+                                                        </aura:iteration>
+                                                    </div>
+                                                    <div style="align-self:end; justify-self:center;">
+                                                        <td class="slds-p-vertical_x-small"><lightning:button label="Add" name="{!pdNo}" variant="brand" onclick="{!c.handleAddCustomProduct}"></lightning:button></td>
+                                                    </div>
+                                                </div>
+                                            </tr>
+                                        </table>
+                                        
+                                    </div>
+                                </aura:iteration>
+                                <aura:set attribute="else">
+                                    <div class="slds-box slds-box_small slds-m-top_medium" style="text-align:center"><b>Data Not Found</b></div>
+                                </aura:set>
+                            </aura:if>
+                        </div>
+                    </aura:set>
+                </aura:if>
+                </aura:if>
+            </div>
+        </div>
+    </lightning:card>
+</aura:component>

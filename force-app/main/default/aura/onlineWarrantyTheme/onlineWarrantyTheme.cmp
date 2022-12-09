@@ -1,0 +1,65 @@
+<aura:component implements="forceCommunity:themeLayout" access="global" description="Online Warranty Theme">
+    <ltng:require
+        styles="{!$Resource.font_awesome+'/css/font-awesome.min.css'}"/>
+	<aura:attribute name="search" type="Aura.Component[]" required="false"/>
+    <aura:attribute name="profileMenu" type="Aura.Component[]" required="false"/>
+    <aura:attribute name="navBar" type="Aura.Component[]" required="false"/>
+    <aura:attribute name="newHeader" type="Aura.Component[]" required="false"/>
+    <aura:attribute name="footer" type="Aura.Component[]" required="false"/>
+    <lightning:layout multipleRows="true" class="container">
+    	<lightning:layoutItem size="12" class="header">
+            <lightning:layout verticalAlign="center">
+                <lightning:layoutItem size="4" padding="horizontal-small" class="logo">
+                    <img style="width: 210px;display: block; margin-left: 120px;margin-top: 10px;" src="{!$Resource.IBRoof}" /> 
+                </lightning:layoutItem>
+                <lightning:layoutItem size="8" padding="horizontal-small">
+                </lightning:layoutItem>
+            </lightning:layout>
+        </lightning:layoutItem>
+        <!--lightning:layoutItem size="12" class="navSection">
+            <lightning:layout verticalAlign="center">
+                <lightning:layoutItem size="6" class="navigation">
+                    {!v.navBar}
+                </lightning:layoutItem>
+                <lightning:layoutItem size="4" class="searchRegion">
+                    {!v.search}
+                </lightning:layoutItem>
+                
+                <lightning:layoutItem size="2" class="profileMenuRegion">
+                    {!v.profileMenu}
+                </lightning:layoutItem>
+            </lightning:layout>
+        </lightning:layoutItem-->
+        <lightning:layoutItem size="12" class="mainContentArea">
+            {!v.body}
+        </lightning:layoutItem>
+        <lightning:layoutItem size="12" class="footer">
+            {!v.footer}
+        </lightning:layoutItem>
+        <!--lightning:layoutItem size="12">
+            <div class="footer_btm">
+                <div class="footer_btm_inner">
+                    <a target="_blank" class="footer_soc_icon" href="https://www.youtube.com/channel/UChX7MCeo9twhSaIOiFQ5r_g">
+                    <span class="fa fa-youtube" title="YouTube"></span>
+                    </a>
+                    <a target="_blank" class="footer_soc_icon" href="https://www.facebook.com/ibroof/?hc_ref=ARQi-tu3DyZEOxfLSpWRZDrzFekE4xNy7o5A_u05DlTjji1Do6Z7NCsLogO-pzsf6xI">
+                        <span class="fa fa-facebook" title="Facebook"></span>
+                    </a>
+                    <a target="_blank" class="footer_soc_icon" href="https://twitter.com/ibroof">
+                    	<span class="fa fa-twitter " title="Twitter"></span>
+                    </a>
+                    <a target="_blank" class="footer_soc_icon" href="https://www.linkedin.com/company/ib-roof-systems">
+                    <span class="fa fa-linkedin" title="IB Roof LinkedIn"></span>
+                    </a>
+                    <a href="https://ibroof.com/wp-login.php" class="footer_soc_icon remove-link" style="font-size:14px;">Authorized Contractor Login</a> 
+                    <div id="powered">
+                        <a href="https://ibroof.com/">
+                            <img style="width: 210px;display: inline-block; margin-left: 40px;" src="{!$Resource.IBRoof}" /> 
+                            </a>
+                        <span style="padding-top: 10px;padding-left: 10px;">© 2019 IB Roof</span>
+                    </div>
+                </div>
+                </div>
+        </lightning:layoutItem-->
+    </lightning:layout>
+</aura:component>

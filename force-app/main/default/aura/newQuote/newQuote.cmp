@@ -1,0 +1,127 @@
+<!--
+ * Name         : newQuote.cmp
+ * Description  : Lightning component to create Quotes. Invoked from New Quote quick action on Account record page and New Quote global action
+ * Author       : Kelley Austin
+ * Created On   : 10/13/2021
+-->
+<aura:component controller="NewQuoteController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" >
+    <aura:attribute name="recordId" type="String" default=""/>
+    <aura:attribute name="accountName" type="String" default=""/>
+    <aura:attribute name="projectId" type="String" default=""/>
+    <aura:attribute name="localTaxRate" type="String" default=""/>
+    <aura:attribute name="shippingAdd" type="String" default=""/>
+    <aura:attribute name="fileToBeUploaded" type="Object[]" default=""/>
+    <aura:attribute name="fileName" type="String" default=""/>
+    <aura:attribute name="fileContent" type="String" default=""/>
+    <aura:attribute name="projectDetail" type="Project__c" default=""/>
+    <aura:attribute name="quoteObj" type="Quote" default="{'sobjectType': 'Quote','Shipping_Country__c':'US'}"/>
+    <aura:attribute name="showFileName" type="Boolean" default="false"/>
+    <aura:attribute name="isglobalAction" type="Boolean" default="false"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large" aria-labelledby="modal-heading-01" aria-modal="true" 
+             aria-describedby="modal-content-id-1"
+             style="{!v.isglobalAction ? 'width: 50%; margin-left:25%;' : ''}">
+        <div class="slds-modal__container">
+            <header class="slds-modal__header">
+                <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCancel}">
+                    <lightning:icon iconName="utility:close" alternativeText="Close" title="Close" variant="inverse" size="small"/>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">New Quote</h2>
+            </header>
+            <div class="slds-modal__content slds-p-around_x-small" id="modal-content-id-1">
+                <div class="slds-section slds-is-open">
+                    <h3 class="slds-section__title slds-theme_shade">
+                      <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Select Account</span>
+                    </h3>
+                    <div aria-hidden="false" class="slds-section__content" style="padding: 0px 10px;">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutItem size="6">
+                                <lightning:recordEditForm objectApiName="Quote" aura:id="qtObj">
+                                    <lightning:layout multipleRows="true">
+                                        <lightning:layoutItem size="6">
+                                            <lightning:inputField fieldName="Account__c" aura:id="accountId" required="false" disabled="{!not(v.isglobalAction)}" onchange="{!c.handleAccountSelection}"/>
+                                        </lightning:layoutItem>
+                                    </lightning:layout>
+                                </lightning:recordEditForm>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </div>
+                </div>
+                <div class="slds-section slds-is-open">
+                    <h3 class="slds-section__title slds-theme_shade">
+                      <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Quote Recipient Details</span>
+                    </h3>
+                    <div aria-hidden="false" class="slds-section__content" style="padding: 0px 10px;">
+                        <lightning:recordEditForm objectApiName="Quote" aura:id="quoteForm">
+                            <lightning:layout multipleRows="true">
+                                <lightning:messages />
+                                <lightning:layoutItem size="6">
+                                    <lightning:inputField fieldName="Name" aura:id="qtName" value="{!v.quoteObj.Name}"/>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6">
+                                    <lightning:inputField fieldName="Special_Notes__c" aura:id="qtSpclNote" value="{!v.quoteObj.Description}"/>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6">
+                                    <lightning:inputField fieldName="QuoteToName" aura:id="qtToName" value="{!v.quoteObj.QuoteToName}"/>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6">
+                                    <lightning:inputField fieldName="Email" aura:id="qtEmail" value="{!v.quoteObj.Email}"/>
+                                </lightning:layoutItem>
+                                <!--lightning:layoutItem size="6">
+                                    <lightning:inputField fieldName="Tax" aura:id="estTax" value="{!v.quoteObj.Tax}"/>
+                                </lightning:layoutItem-->
+                                <lightning:layoutItem size="6">
+                                    <div class="slds-clearfix" style="float: left;margin-left: 1%;">
+                                        <div class="slds-float_right">
+                                            <lightning:input aura:id="fileId" name="doc" type="file" files="{!v.fileToBeUploaded}" label="Upload Document" multiple="false" accept=".pdf" onchange="{!c.handleFilesChange }"/>
+                                            <aura:if isTrue="{!v.showFileName}">
+                                                FileName : {!v.fileName}
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="12">
+                                    <lightning:inputAddress style="padding: 4px;"
+                                        addressLookupPlaceholder="Search Address"
+                                        addressLabel="Shipping Address"
+                                        streetLabel="Shipping Street"
+                                        cityLabel="Shipping City"
+                                        countryLabel="Shipping Country"
+                                        provinceLabel="Shipping State/Province"
+                                        postalCodeLabel="Shipping Postal Code"
+                                        street="{!v.quoteObj.Shipping_Street__c}"
+                                        city="{!v.quoteObj.Shipping_City__c}"
+                                        country="{!v.quoteObj.Shipping_Country__c}"
+                                        province="{!v.quoteObj.Shipping_State_Province__c}"
+                                        postalCode="{!v.quoteObj.Shipping_Zip_Postal_Code__c}"
+                                        required="false"
+                                        showAddressLookup="true"
+                                        onchange="{!c.handleAddressChange}">
+                                    </lightning:inputAddress>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6">
+                                    <lightning:layout multipleRows="false">
+                                        <lightning:layoutItem size="12">
+                                            <div class="slds-clearfix" style="float: left;margin-left: 1%;margin-top: 2.5%;">
+                                                <label for="fieldid" class="slds-m-bottom_small" style="font-size:12px; color:rgb(107, 109, 112);">Local Tax Rate</label><br/>
+                                                <lightning:formattedText aura:id="fieldid" value="{!v.localTaxRate}"/>
+                                            </div>
+                                        </lightning:layoutItem>
+                                    </lightning:layout>
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                        </lightning:recordEditForm>
+                    </div>
+                </div>
+            </div>
+            <footer class="slds-modal__footer">
+                <lightning:button class="slds-m-top_small" label="Cancel" onclick="{!c.handleCancel}"/>
+                <lightning:button class="slds-m-top_small" variant="brand" label="Save Quote" onclick="{!c.handleSaveQuote}"/>
+            </footer>
+            </div>
+    </section>
+    <aura:if isTrue="{!v.isglobalAction}">
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+</aura:component>
