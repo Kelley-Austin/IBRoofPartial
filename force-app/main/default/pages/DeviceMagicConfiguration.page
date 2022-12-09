@@ -1,0 +1,19 @@
+<apex:page controller="DeviceMagicConfigurationController" lightningStylesheets="true" rendered="true" action="{!action}">
+<apex:form >
+    
+    <apex:pageBlock title="Device Configuration" id="block">
+        <apex:pageMessages />
+        <apex:pageBlockButtons >
+            <apex:commandButton action="{!saveDevices}" value="Save"/>
+        </apex:pageBlockButtons>
+        <apex:pageBlockTable id="table" var="wrap" value="{!deviceWrapperList}">
+            <apex:column value="{!wrap.device.Identifier__c}"/>
+            <apex:column value="{!wrap.device.Owner__c}"/>
+            <apex:column headerValue="Field Tech" >                            
+                    <apex:inputField value="{!wrap.device.Field_Tech__c}" />                    
+              </apex:column>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+
+</apex:form>
+</apex:page>

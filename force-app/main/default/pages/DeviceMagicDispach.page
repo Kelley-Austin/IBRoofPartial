@@ -1,0 +1,27 @@
+<apex:page extensions="DeviceMagicDispatchController" tabStyle="Opportunity" lightningStylesheets="true" rendered="true"  standardController="Opportunity" action="{!action}">
+<apex:form >
+    <apex:pageBlock title="Dispach Form" id="block">
+        <apex:pageMessages />
+        <apex:pageBlockButtons >
+            <apex:commandButton action="{!cancel}" value="Cancel"/>
+            <apex:commandButton action="{!dispatch}" value="Dispatch"/>
+        </apex:pageBlockButtons>
+        <apex:pageBlockSection title="Details" columns="2">
+        
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Form" for="formName"/>
+                <apex:selectList id="formName" value="{!selectedForm}" multiselect="false" size="1">
+                    <apex:selectOptions value="{!forms}"/>
+                </apex:selectList>
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Device" for="deviceUser"/>
+                <apex:selectList id="deviceUser" value="{!selectedDevice}" multiselect="false" size="1">
+                    <apex:selectOptions value="{!devices}"/>
+                </apex:selectList>
+            </apex:pageBlockSectionItem>
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+</apex:form>
+</apex:page>

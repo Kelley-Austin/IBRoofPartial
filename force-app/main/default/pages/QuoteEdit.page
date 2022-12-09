@@ -1,0 +1,142 @@
+<apex:page extensions="QuoteEditController" lightningStylesheets="true" standardController="Quote" action="{!safeAction}">
+
+<script>
+window.history.pushState(null, "", window.location.href);
+window.onpopstate = function () {
+    window.history.pushState(null, "", window.location.href);
+};
+
+document.addEventListener('keypress', disableEnter);
+function disableEnter(e) {
+    if (e.code == 'Enter' || e.code == 'NumpadEnter') {
+        e.preventDefault();
+        return false;
+    }
+}
+</script>
+ 
+<apex:form >
+
+    <apex:pageMessages />
+    
+    
+
+    <apex:pageBlock title="Quote Items"  mode="edit" id="cart_block">
+    
+        <apex:pageBlockButtons location="top">
+            <apex:commandButton action="{!cancel}" value="Exit Without Saving" immediate="true"/>
+            <apex:commandButton action="{!finalizeQuote}" value="Finalize Quote" styleClass="slds-vf-button_brand" /> 
+        </apex:pageBlockButtons>
+        
+        <apex:pageBlockTable value="{!quoteRows}" var="quoteItem" >
+
+                <apex:column headerValue="PRODUCT SKU" value="{!quoteItem.productSku}"/>
+                <apex:column headerValue="PRODUCT NAME" value="{!quoteItem.productName}"/>
+                <apex:column headerValue="COLOR" value="{!quoteItem.productColor}"/>
+                <apex:column headerValue="SIZE" value="{!quoteItem.productSize}"/>
+                <apex:column headerValue="WEIGHT (LBS)" value="{!quoteItem.displayWeight}"/>
+                <apex:column headerValue="PACKAGE" value="{!quoteItem.productPackage}"/>
+                
+                
+                <apex:column headerValue="Special Notes">
+                    <apex:inputText size="30" id="specialNotes" value="{!quoteItem.specialNotes}" style="min-width: 20px !important;" />
+                </apex:column>
+                <apex:column headerValue="Quantity">
+                    <apex:inputText size="10" id="quantity" value="{!quoteItem.quantity}" style="min-width: 20px !important;" />
+                </apex:column>
+                <apex:column headerValue="Unit Price">
+                    <apex:inputText size="10" id="price" value="{!quoteItem.unitPrice}" style="min-width: 20px !important;" />
+                </apex:column>
+                
+                <apex:column >
+                    <apex:commandButton onclick="removeItemJs('{!quoteItem.rowNumber}'); return false;" styleClass="slds-vf-button_neutral" value="Remove" />
+                </apex:column>
+                
+        </apex:pageBlockTable>
+        
+    </apex:pageBlock>
+    <apex:pageBlock title="Products" id="block" mode="edit">
+
+        <apex:pageBlockSection id="search_block" title="Search" columns="6" >
+            
+            <apex:pageBlockSectionItem dataStyle="width:30px;">
+                <apex:outputLabel value="Product Type" for="product_family" styleClass="slds-size_1-of-10"/>
+                <apex:selectList id="product_family" value="{!productFamily}" multiselect="false" size="1" styleClass="slds-size_1-of-10" onchange="selectProductFamily()">
+                    <apex:selectOptions value="{!productFamilys}"/>
+                </apex:selectList>
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem dataStyle="width:30px;">
+                <apex:outputLabel value="Product Name" for="product_name" styleClass="slds-size_1-of-10" />
+                <apex:selectList id="product_name" value="{!productName}" multiselect="false" size="1" styleClass="slds-size_1-of-10" onchange="searchServer()" >
+                    <apex:selectOptions value="{!productNames}"/>
+                </apex:selectList>
+            </apex:pageBlockSectionItem>           
+              
+            <apex:pageBlockSectionItem dataStyle="width:30px;">
+                <apex:outputLabel value="Color" for="color" styleClass="slds-size_1-of-10" />
+                <apex:selectList id="color" value="{!productColor}" multiselect="false" size="1"  style="min-width: 20px !important;" styleClass="slds-size_1-of-10" onchange="searchServer()" >
+                    <apex:selectOptions value="{!productColors}"/>
+                </apex:selectList>
+            </apex:pageBlockSectionItem>           
+            
+            <apex:pageBlockSectionItem dataStyle="width:30px;">
+                <apex:outputLabel value="Size" for="size" styleClass="slds-size_1-of-10"/>
+                <apex:selectList id="size" value="{!productSize}" multiselect="false"  style="min-width: 20px !important;" size="1" styleClass="slds-size_1-of-10" onchange="searchServer()" >
+                    <apex:selectOptions value="{!productSizes}"/>
+                </apex:selectList>
+            </apex:pageBlockSectionItem>           
+            
+            <apex:pageBlockSectionItem dataStyle="width:30px;">
+                <apex:outputLabel value="SKU" for="sku" styleClass="slds-size_1-of-10"/>
+                <apex:inputText size="10" id="sku" value="{!productSku}" style="min-width: 20px !important;" styleClass="slds-size_1-of-10" />
+            </apex:pageBlockSectionItem>
+            
+            <apex:pageBlockSectionItem >
+                <apex:commandButton action="{!runSearch}" value="Search" id="search" />
+
+            </apex:pageBlockSectionItem>
+      
+      </apex:pageBlockSection>
+            
+      <apex:pageBlockSection title="Result" id="search_result_block" columns="1"> 
+      
+            <apex:pageBlockTable value="{!searchRows}" var="item">
+                <apex:column headerValue="PRODUCT SKU" value="{!item.productSku}"/>
+                <apex:column headerValue="PRODUCT NAME" value="{!item.productName}"/>
+                <apex:column headerValue="COLOR" value="{!item.color}"/>
+                <apex:column headerValue="SIZE" value="{!item.size}"/>
+                <apex:column headerValue="THICKNESS" value="{!item.thickness}"/>
+                <apex:column headerValue="WEIGHT (lbs)" value="{!item.weight}"/>
+                <apex:column headerValue="COVERAGE (Sq Ft)" value="{!item.coverage}"/>
+                <apex:column headerValue="PACKAGE" value="{!item.packagePerPallet}"/>
+                <apex:column headerValue="PRICE EACH">
+                    <apex:outputText value="{0, Number, Currency}" rendered="{!NOT(item.calculate)}">
+                        <apex:param value="{!item.priceEach}" />
+                    </apex:outputText>
+                    <apex:outputText value="CALCULATE" rendered="{!item.calculate}" />
+                </apex:column>
+                <apex:column >
+                    <apex:commandButton onclick="addtoCartJs('{!item.pricebookEntryId}'); return false;" styleClass="slds-vf-button_neutral" value="Add" />
+                </apex:column>
+            </apex:pageBlockTable>
+            
+      </apex:pageBlockSection>
+    </apex:pageBlock>
+    
+    <apex:actionFunction name="searchServer" action="{!runSearch}" rerender="search_result_block,search_block" />
+    
+    <apex:actionFunction name="selectProductFamily" action="{!selectProductFamily}" rerender="search_result_block,search_block" />
+    
+    <apex:actionFunction name="addtoCartJs" action="{!addtoCart}" rerender="cart_block" >
+        <apex:param name="myParam" value="" assignTo="{!selectedPricebookEntry}"/>
+    </apex:actionFunction>
+    
+    <apex:actionFunction name="removeItemJs" action="{!removeItem}" rerender="cart_block" >
+        <apex:param name="myParam2" value="" assignTo="{!selectedLine}"/>
+    </apex:actionFunction>
+    
+</apex:form>
+
+
+</apex:page>

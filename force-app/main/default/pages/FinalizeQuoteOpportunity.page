@@ -1,0 +1,78 @@
+<apex:page extensions="QuoteOpportunityController" lightningStylesheets="true" standardController="Opportunity">
+
+<apex:form >
+      
+    <apex:pageMessages />    
+        
+    <apex:pageBlock title="Quote Detail">
+        <apex:pageBlockTable value="{!quoteRows}" var="cartItem" >
+                <apex:column headerValue="PRODUCT SKU" value="{!cartItem.productSku}" />
+                <apex:column headerValue="PRODUCT NAME" value="{!cartItem.productName}" />
+                <apex:column headerValue="COLOR" value="{!cartItem.productColor}" />
+                <apex:column headerValue="SIZE" value="{!cartItem.productSize}" />
+                <apex:column headerValue="WEIGHT (LBS)" value="{!cartItem.displayWeight}" />
+                <apex:column headerValue="PACKAGE" value="{!cartItem.productPackage}" />
+                <apex:column headerValue="SPECIAL NOTES" value="{!cartItem.specialNotes}" />
+                <apex:column headerValue="QUANTITY" value="{!cartItem.quantity}" />
+                <apex:column headerValue="UNIT PRICE" >
+                    <apex:outputText value="{0, Number, Currency}">
+                        <apex:param value="{!cartItem.unitPrice}" />
+                    </apex:outputText>  
+                </apex:column>
+                <apex:column headerValue="LINE PRICE" >
+                    <apex:outputText value="{0, Number, Currency}">
+                        <apex:param value="{!cartItem.totalPrice}" />
+                    </apex:outputText>
+                </apex:column>  
+        </apex:pageBlockTable>
+        <apex:pageBlockSection columns="2">
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Total Weight" for="quote_weight"/>
+                <apex:outputText value="{0, Number} lbs" id="quote_weight">
+                    <apex:param value="{!totalQuoteWeight}" />
+                </apex:outputText>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Total Price" for="quote_total"/>
+                <apex:outputText value="{0, Number, Currency}" id="quote_total">
+                    <apex:param value="{!totalQuotePrice}" />
+                </apex:outputText>
+            </apex:pageBlockSectionItem>
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+    
+    
+        <apex:pageBlock mode="edit">
+        
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!back}" value="Back" immediate="true"/>
+                <apex:commandButton action="{!saveQuote}" value="Save Quote"/> 
+            </apex:pageBlockButtons>
+
+            <apex:pageBlockSection title="Quote" columns="2">
+            
+                <apex:inputField value="{!quoteObj.Project2__c}" required="true"/>
+  
+                <apex:inputField value="{!quoteObj.QuoteToName}"  />
+
+                <apex:inputField value="{!quoteObj.Email}"  />
+
+                <apex:inputField value="{!quoteObj.QuoteToStreet}" />
+
+                <apex:inputField value="{!quoteObj.QuoteToCity}" />
+
+                <apex:inputField value="{!quoteObj.QuoteToState}" />
+
+                <apex:inputField value="{!quoteObj.QuoteToPostalCode}" />
+
+                <apex:inputField value="{!quoteObj.ShippingHandling}"  />
+
+                <apex:inputField value="{!quoteObj.Tax}"  />
+            </apex:pageBlockSection>
+            
+        </apex:pageBlock>
+
+        
+    </apex:form>
+
+</apex:page>

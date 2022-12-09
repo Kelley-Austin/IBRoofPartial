@@ -1,0 +1,213 @@
+<apex:page StandardController="Open_Invoice__c" renderAs="pdf" standardStylesheets="true" applyHtmlTag="true" applyBodyTag="false" showHeader="false" sidebar="false" extensions="pdfopeninvoicecntrl">
+    <head>
+        <STYLE>
+            .styletab{width:100%;height:100%;margin-top:-5px auto; collapse;margin-top:-5px;}
+            .bodystyle{border:1px solid black;padding:0px;}
+            .fontstyle{font-size: 14px;} 
+            
+        </STYLE>
+    </head>
+    <!-- <body class="bodystyle">-->
+    <body>
+        <!--<div>
+<apex:outputtext value="{!Order__c.Account__r.Distributor__r.Distributor_Logo__c}" escape="false" />
+</div>-->
+        <div style="padding:0px;position:absolute;width:99.5%">
+            <div>
+                <table width="100%">
+                    <tr>
+                        <td width="30%">
+                             <apex:image value="{!URLFOR($Resource.invoiceimagepdf4)}" style="z-index:-1;width:100%;"/>
+                        </td>
+                        <td width="40%"></td>
+                        <td width="30%">
+                            <center>
+                            <b style="font-size:14px;font-family:Arial;">Page:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b>1<br/>
+                            <b style="font-size:14px;font-family:Arial;">Rep:&nbsp;&nbsp;</b><apex:outputText value=" {!Open_Invoice__c.Rep__c}"/><br/>
+                            <b style="font-size:14px;font-family:Arial;">Invoice Number:</b><apex:outputText value=" {!Open_Invoice__c.Invoice_Number__c}"/><br/>
+                            <b style="font-family:Arial;">INVOICE</b>
+                                </center>
+                        </td>
+                        </tr>
+                </table>
+            </div>
+            <br/>
+            <div>
+                <table width="100%">
+                    <tr>
+                        <td width="75%"></td>
+                        <td width="25%" style="font-family:Arial;">
+                            <b>Order Date &nbsp;&nbsp;&nbsp;</b>
+                            <apex:outputText value="{0,date,MM/DD/yyyy}">
+                                <apex:param value="{!Open_Invoice__c.Order_Date__c}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </table>
+                <br /><br />
+            </div>
+            <div>
+                <table width="100%">
+                    <tr>
+                        <td width="10%"></td>
+                        <td width="20%" style="font-family:Arial;">
+                            <b>Sold To:</b><br /><apex:outputText value=" {!Open_Invoice__c.CustomerNo__r.Name}"/><apex:outputText value=" {!Open_Invoice__c.CustomerNo__r.BillingStreet}"/>
+                            <apex:outputText value=" {!Open_Invoice__c.CustomerNo__r.BillingCity}"/>,<apex:outputText value=" {!Open_Invoice__c.CustomerNo__r.BillingState}"/><apex:outputText value=" {!Open_Invoice__c.CustomerNo__r.BillingPostalCode}"/>
+                        </td>
+                        <td width="20%">
+                            
+                        </td>
+                        <td width="20%">
+                            
+                        </td>
+                        <td width="20%" style="font-family:Arial;">
+                            <b>Ship To:</b><br /><apex:outputText value=" {!Open_Invoice__c.CustomerNo__r.Name}"/><apex:outputText value=" {!Open_Invoice__c.CustomerNo__r.ShippingStreet}"/>
+                            <apex:outputText value=" {!Open_Invoice__c.CustomerNo__r.ShippingCity}"/>,<apex:outputText value=" {!Open_Invoice__c.CustomerNo__r.ShippingState}"/><apex:outputText value=" {!Open_Invoice__c.CustomerNo__r.ShippingPostalCode}"/>
+                        </td>
+                        <td width="10%"></td>
+                    </tr>
+                </table>
+            </div>
+            
+            <apex:image value="{!URLFOR($Resource.invoicepdfimage2)}" style="z-index:-1;width:100%;height:50px;margin-top:10px;"/>
+            <table class="t1" style="margin-top:10px;margin-bottom:15px;margin-left:0px;font-size:14px;text-align:center;border-collapse:collapse;width:100%">
+                <tr style="border:1px solid black;">
+                    <th >Sales No</th>
+                    <th >Customer P.O.</th> 
+                    <th >Ship VIA</th>
+                    <th >Date Shipped</th>
+                    <th >Teams</th>
+                    <th >Invoice Date</th>
+                </tr>
+                
+                <tr style="border:1px solid black;margin-top:400px">
+                    <td >
+                        <apex:outputText value=" {!Open_Invoice__c.Order_Number__c}"/>
+                    </td>
+                    <td>
+                        <apex:outputText value=" {!Open_Invoice__c.Customer_PO_Number__c}"/>
+                    </td>
+                    <td>
+                        <apex:outputText value=" {!Open_Invoice__c.Ship_Via__c}"/>
+                    </td>
+                    <td>
+                        <apex:outputText value=" {!Open_Invoice__c.Ship_Date__c}"/>
+                    </td>
+                    <td>
+                        <apex:outputText value=" {!Open_Invoice__c.Terms__c}"/>
+                    </td>
+                    <td >
+                        <apex:outputText value=" {!Open_Invoice__c.Invoice_Date__c}"/>
+                    </td>
+                </tr>
+            </table>
+            
+            <apex:image value="{!URLFOR($Resource.invoicepdfimage1)}" style="z-index:-1;width:100%;height:50px;"/>
+            <table class="t1" style="margin-top:-45px;margin-left:0px;font-size:14px;text-align:center;border-collapse:collapse;width:100%">
+                <tr style="border:1px solid black;">
+                    <th style="color:white;">Qty<br/>Ord.</th>
+                    <th style="color:white;">Qty.<br/>Ship</th> 
+                    <th style="color:white;">Back<br/>Ord</th>
+                    <th style="color:white;">Item No.</th>
+                    <th style="color:white;">Description</th>
+                    <th style="color:white;">Unit Price</th>
+                    <th style="color:white;">Extended Price</th>
+                </tr>
+                
+                <apex:repeat value="{!opiList}" var="openinvoiceItem">
+                <tr style="border:1px solid black;margin-top:400px">
+                    <td >
+                        <apex:outputText value="{!openinvoiceItem.Quantity_Ordered__c}"/>
+                    </td>
+                    <td>
+                        <apex:outputText value="{!openinvoiceItem.Quantity_Shipped__c}"/>
+                    </td>
+                    <td>
+                        <apex:outputText value="{!openinvoiceItem.Quantity_BackOrdered__c}"/> 
+                    </td>
+                    <td>
+                        <apex:outputText value="{!openinvoiceItem.Item_Code__c}"/> 
+                    </td>
+                    <td>
+                        <apex:outputText value="{!openinvoiceItem.Item_Description__c}"/>
+                    </td>
+                    <td >
+                        <apex:outputText value="{!openinvoiceItem.Unit_Price__c}"/>
+                    </td>
+                    <td>
+                        <apex:outputText value="{!openinvoiceItem.Extended_Price__c}"/>
+                    </td>
+                    
+                </tr>
+                </apex:repeat> 
+            </table>
+            
+            <br/><br/>
+            <apex:image value="{!URLFOR($Resource.invoicepdfimage3)}" style="z-index:-1;width:100%;height:50px; margin-top:80px;"/>
+            <div >
+                <table width="100%">
+                    <tr>
+                        <td width="60%">
+                            <div>
+                                <table width="100%">
+                                    <tr>
+                                        <td width="10%"></td>
+                                        <td width="80%">
+                                            <p style="font-size:11px;font-family:Arial;">
+                                               THIS INVOICE DUE BY <apex:outputText value=" {!Open_Invoice__c.Due_Date__c}"/>
+                                            </p>
+                                            <p style="font-size:11px;font-family:Arial;">
+                                               ALL PAST DUE INVOICES ARE SUBJECT TO A 2% LATE CHARGE. 
+                                            </p>
+                                            <p style="font-size:12px;margin-left:220px;">
+                                                <apex:image value="{!URLFOR($Resource.invoicepdfimage5)}" style="z-index:-1;width:50%;height"/>
+                                            </p>
+                                        </td>
+                                        
+                                    </tr>
+                                </table>
+                            </div>		
+                        </td>
+                        <td width="40%">
+                            <table border="1px solid black" style="width:100%;margin:0px 0px 0px 0px;text-align:center;border-collapse:collapse;position:relative" class="footertable">
+                                <tr style="border:1px solid black;margin:0px 0px 0px 0px;font-family:Arial;">
+                                    <th style="border:1px solid black;margin:0px 0px 0px 0px;font-family:Arial;">Sales Amount</th>
+                                    <td style="border:1px solid black;margin:0px 0px 0px 0px;font-family:Arial;"><apex:outputText value=" {!Open_Invoice__c.Freight_Amount__c}"/></td>
+                                </tr>
+                                <tr style="border:1px solid black">
+                                    <th style="border:1px solid black;font-family:Arial;">Freight:</th>
+                                    <td style="border:1px solid black;font-family:Arial;"><apex:outputText value=" {!Open_Invoice__c.Freight_Amount__c}"/></td>
+                                </tr>
+                                <tr style="border:1px solid black">
+                                    <th style="border:1px solid black;font-family:Arial;">Less Freight Discount</th>
+                                    <td style="border:1px solid black;font-family:Arial;"><apex:outputText value=" {!Open_Invoice__c.Less_Freight_Discount__c}"/></td>
+                                </tr>
+                                <tr style="border:1px solid black;margin:0px 0px 0px 0px;">
+                                    <th style="border:1px solid black;margin:0px 0px 0px 0px;font-family:Arial;">Taxable Total:</th>
+                                    <td style="border:1px solid black;margin:0px 0px 0px 0px;font-family:Arial;"><apex:outputText value=" {!Open_Invoice__c.Taxable_Total__c}"/></td>
+                                </tr>
+                                <tr style="border:1px solid black">
+                                    <th style="border:1px solid black;font-family:Arial;">Sales Tax:</th>
+                                    <td style="border:1px solid black;font-family:Arial;"><apex:outputText value=" {!Open_Invoice__c.Sales_Tax__c}"/></td>
+                                </tr>
+                                <tr style="border:1px solid black">
+                                    <th style="border:1px solid black;font-family:Arial;">Invoice Total:</th>
+                                    <td style="border:1px solid black;font-family:Arial;"><apex:outputText value="{!Open_Invoice__c.Taxable_Total__c + Open_Invoice__c.Sales_Tax__c}"/></td>
+                                </tr>
+                                <tr style="border:1px solid black">
+                                    <th style="border:1px solid black;font-family:Arial;">Payment</th>
+                                    <td style="border:1px solid black;font-family:Arial;">0.00</td>
+                                </tr>
+                                <tr style="border:1px solid black">
+                                    <th style="border:1px solid black;font-family:Arial;">Total Due</th>
+                                    <td style="border:1px solid black;font-family:Arial;"><apex:outputText value="{!Open_Invoice__c.Taxable_Total__c + Open_Invoice__c.Sales_Tax__c}"/></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+    </body>
+</apex:page>

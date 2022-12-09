@@ -1,0 +1,580 @@
+<apex:page extensions="QuoteAccountController" lightningStylesheets="true" standardController="Account">
+	<html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+
+	<apex:slds />
+
+	<script>
+		window.history.pushState(null, "", window.location.href);
+		window.onpopstate = function () {
+			window.history.pushState(null, "", window.location.href);
+		};
+		document.addEventListener('keypress', disableEnter);
+		function disableEnter(e) {
+			if (e.code == 'Enter' || e.code == 'NumpadEnter') {
+				e.preventDefault();
+				return false;
+			}
+		}
+	</script>
+
+	<apex:form >
+
+		<apex:pageMessages />
+
+		<apex:inputField id="selectedProjectId" style="display: none;" value="{!quoteObj.Project2__c}" required="false" />
+		<div class="apexp">
+			<div class="individualPalette">
+				<div class="accountBlock">
+					<div class="bPageBlock brandSecondaryBrd apexDefaultPageBlock secondaryPalette">
+						<div class="pbHeader">
+							<table border="0" cellpadding="0" cellspacing="0">
+								<tbody>
+									<tr>
+										<td class="pbTitle">
+											<h2 class="mainTitle">Select a Project</h2>
+										</td>
+										<td>&nbsp;</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="pbBody" style="overflow: unset !important">
+							<div id="projectLookupContainer" />
+						</div>
+						<div class="pbFooter secondaryPalette">
+							<div class="bg"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<apex:pageBlock title="Quote Recipient Details" id="quote_details">
+
+			<apex:pageBlockButtons location="bottom">
+				<apex:commandButton action="{!back}" value="Back" immediate="true" />
+				<apex:commandButton action="{!saveQuote}" value="Save Quote" styleClass="slds-vf-button_brand" />
+			</apex:pageBlockButtons>
+
+			<apex:pageBlockSection columns="4">
+				<apex:inputField label="Quote Name" value="{!quoteObj.Name}" required="false" />
+				<apex:pageBlockSectionItem />
+				<apex:inputField label="Special Notes" value="{!quoteObj.Special_Notes__c}" />
+				<apex:pageBlockSectionItem />
+				<apex:inputField label="Recipient Name" value="{!quoteObj.QuoteToName}" />
+				<apex:pageBlockSectionItem />
+				<apex:pageBlockSectionItem />
+				<apex:pageBlockSectionItem />
+				<apex:inputField label="Recipient Email" value="{!quoteObj.Email}" />
+				<apex:pageBlockSectionItem />
+				<apex:pageBlockSectionItem />
+				<apex:pageBlockSectionItem />
+				<apex:inputField label="Estimated Tax" value="{!quoteObj.Tax}" />
+				<apex:pageBlockSectionItem />
+				<apex:pageBlockSectionItem >
+					<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+					<apex:commandButton value="Upload Document" onclick="remoteLocationPost(); return false;" />
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem />
+				<apex:outputText label="Local Tax Rate" value="{!taxRatePercentage}" />
+				<apex:pageBlockSectionItem />
+				<apex:pageBlockSectionItem >
+					<div style="display: flex;">
+						<span style="display: block;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+						<input type="file" id="fileId" />
+					</div>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem />
+				<apex:outputText label="Shipping Address" value="{!projectAddress}" />
+				<apex:pageBlockSectionItem />
+				<apex:pageBlockSectionItem >
+					<apex:repeat value="{!uploadedFiles}" var="file">
+						<div style="display:flex;">
+							<span style="display: block;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+							<apex:commandButton onclick="removeFileJs('{!file.index}'); return false;" styleClass="slds-vf-button_neutral" value="Remove"
+							/>
+							<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+							<apex:outputText style="display: inline-flex; align-items: center;" value="{!file.name}" />
+						</div>
+						<br/>
+					</apex:repeat>
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+
+		</apex:pageBlock>
+
+
+		<apex:pageBlock title="Quote Line Items">
+
+			<apex:pageBlockTable value="{!quoteRows}" var="cartItem">
+				<apex:column headerValue="PRODUCT SKU" value="{!cartItem.productSku}" />
+				<apex:column headerValue="PRODUCT NAME" value="{!cartItem.productName}" />
+				<apex:column headerValue="COLOR" value="{!cartItem.productColor}" />
+				<apex:column headerValue="SIZE" value="{!cartItem.productSize}" />
+				<apex:column headerValue="WEIGHT (LBS)" value="{!cartItem.displayWeight}" />
+				<apex:column headerValue="PACKAGE" value="{!cartItem.productPackage}" />
+				<apex:column headerValue="SPECIAL NOTES" value="{!cartItem.specialNotes}" />
+				<apex:column headerValue="QUANTITY" value="{!cartItem.quantity}" />
+				<apex:column headerValue="UNIT PRICE">
+					<apex:outputText value="{0, Number, Currency}">
+						<apex:param value="{!cartItem.unitPrice}" />
+					</apex:outputText>
+				</apex:column>
+				<apex:column headerValue="LINE PRICE">
+					<apex:outputText value="{0, Number, Currency}">
+						<apex:param value="{!cartItem.totalPrice}" />
+					</apex:outputText>
+				</apex:column>
+			</apex:pageBlockTable>
+			<apex:pageBlockSection columns="2" collapsible="false">
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="Total Weight" for="quote_weight" />
+					<apex:outputText value="{0, Number} lbs" id="quote_weight">
+						<apex:param value="{!totalQuoteWeight}" />
+					</apex:outputText>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="Total Price" for="quote_total" />
+					<apex:outputText value="{0, Number, Currency}" id="quote_total">
+						<apex:param value="{!totalQuotePrice}" />
+					</apex:outputText>
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+		</apex:pageBlock>
+
+		<apex:actionFunction name="getTaxAndShippingAddressJs" action="{!setTaxAndShippingAddress}" rerender="quote_details" />
+
+		<apex:actionFunction name="removeFileJs" action="{!removeFile}" rerender="quote_details">
+			<apex:param name="myParam2" value="" assignTo="{!selectedFile}" />
+		</apex:actionFunction>
+
+		<apex:actionFunction name="passToController" action="{!addFile}" rerender="quote_details">
+			<apex:param name="myParam" value="" assignTo="{!uploadedFileName}" />
+			<apex:param name="myOtherParam" value="" assignTo="{!uploadedFileString}" />
+		</apex:actionFunction>
+
+	</apex:form>
+
+	</html>
+
+	<script>
+		var uploadedFile;
+		function getAsText(readFile) {
+			var reader = new FileReader();
+			reader.readAsDataURL(readFile);
+			reader.onload = () => {
+				var fileString = reader.result;
+				uploadedFileString = fileString.split(",")[1];
+				var input = document.getElementById("fileId");
+				var uploadedFileName = input.value.replace(/^.*\\/, "");
+				console.log(uploadedFileName);
+				passToController(uploadedFileName, uploadedFileString);
+			}
+		}
+		function remoteLocationPost() {
+			console.log('button pressed!');
+			var fbody = document.getElementById("fileId").files[0];
+			getAsText(fbody);
+		}
+	</script>
+
+	<script src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+	<script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.21.1/babel.min.js"></script>
+	<script type="text/babel">
+	class ProjectLookupField extends React.Component {
+		constructor(props) {
+			super(props);
+
+			this.state = { 
+				isDropDownOpen: false,
+				isModalOpen: false,
+				selectedProject: null,
+				searchText: "",
+				searchResults: [],
+				recentProjects: [],
+				currentUsername: null,
+				newProjectName: "",
+				newProjectStreet: "",
+				newProjectCity: "",
+				newProjectState: "",
+				newProjectZip: "",
+				newProjectError: false,
+				projectError: false
+			};
+
+			this.handleClick = this.handleClick.bind(this);
+			this.dropDownRef = React.createRef();
+			this.DisplaySearchOrSelectedProject = this.DisplaySearchOrSelectedProject.bind(this);
+			this.NewProjectModal = this.NewProjectModal.bind(this);
+			this.ProjectLookupItemList = this.ProjectLookupItemList.bind(this);
+			this.ProjectLookupItem = this.ProjectLookupItem.bind(this);
+			this.handleSearch = this.handleSearch.bind(this);
+			this.selectProject = this.selectProject.bind(this);
+			this.createNewProject = this.createNewProject.bind(this);
+		}
+
+		componentDidMount() {
+			document.addEventListener('mousedown', this.handleClick);
+			const thisComponent = this;
+
+			//error checking
+			let projectError = false;
+			let messageCollection = document.getElementsByClassName("messageText");
+			let messageArray = Array.prototype.slice.call(messageCollection);
+			messageArray.forEach(node => node.innerHTML.includes("project") ? projectError = true : null);
+			if (projectError)
+				thisComponent.setState({ projectError: true });
+
+			QuoteAccountController.getCurrentUserName(
+				function(result, event) {
+					if (event.status) {
+						thisComponent.setState({ currentUsername: result });
+					} else {
+						console.log(`event type: ${event.type}, event message: ${event.message}, event stack trace: ${event.where}`);
+					}
+				}
+			);
+
+			QuoteAccountController.getRecentProjects(
+				function(result, event) {
+					if (event.status) {
+						thisComponent.setState({ recentProjects: result });
+					} else {
+						console.log(`event type: ${event.type}, event message: ${event.message}, event stack trace: ${event.where}`);
+					}
+				},
+				{ buffer: false }
+			);
+		}
+
+		componentWillUnmount() {
+			document.removeEventListener('mousedown', this.handleClick);
+		}
+
+		handleClick(e) {
+			if (this.state.isDropDownOpen && !this.dropDownRef.current.contains(e.target)) {
+				this.setState({ isDropDownOpen: false });
+			}
+		}
+
+		handleSearch(e) {
+			const thisComponent = this;
+			this.setState({  searchText: e.target.value },
+			QuoteAccountController.searchProjects(
+				thisComponent.state.searchText,
+				function(result, event) {
+					if (event.status) {
+						thisComponent.setState({ searchResults: result });
+					} else {
+						console.log(`event type: ${event.type}, event message: ${event.message}, event stack trace: ${event.where}`);
+					}
+				},
+				{ buffer: false }
+			));
+		}
+
+		openDropDown() {
+			this.setState({ isDropDownOpen: true })
+		}
+
+		selectProject(project) {
+			this.setState({ selectedProject: project, isDropDownOpen: false, isModalOpen: false },
+			() => {
+				console.log("selecting project");
+				document.querySelectorAll('[id*="selectedProjectId"]').forEach(el => el.value = project.Id);
+				getTaxAndShippingAddressJs();
+			});
+		}
+
+		ProjectLookupItemList = projectList => (
+			projectList.map(project => this.ProjectLookupItem(project))
+		);
+
+		ProjectDisplayName = (project, searchText) => {
+			let projectName = project.Name.split(searchText),
+				i = projectName.length - 1;
+
+			const dataMatched = <mark className="data-matched">{searchText}</mark>;
+
+			do {
+				projectName.splice(i, 0, dataMatched);
+				i--;
+			} while (i > 0)
+
+			return projectName;
+		}
+
+		ProjectLookupItem = project => (
+			<li role="presentation" className="slds-listbox__item" onClick={() => this.selectProject(project)}>
+				<div className="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+					<span className="slds-media__figure slds-listbox__option-icon">
+						<span className="slds-icon_container slds-icon-custom-24">
+							<svg aria-hidden="true" className="slds-icon slds-icon_small">
+								<use xlinkHref="{!URLFOR($Asset.SLDS, 'assets/icons/custom-sprite/svg/symbols.svg#custom24')}"></use>
+							</svg>
+						</span>
+					</span>
+					<span className="slds-media__body" style={{fontSize: "var(--lwc-fontSize3,0.8125rem)", marginTop: "4px"}}>
+						<span>{this.ProjectDisplayName(project, this.state.searchText)}</span>
+					</span>
+				</div>
+			</li>
+		);
+
+		DisplaySearchOrSelectedProject = () => (
+			this.state.selectedProject ? (
+				<div className={`slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right requiredInput${this.state.projectError ? ' slds-has-error' : ''}`} role="none">
+					<div className="requiredBlock" />
+					<span className="slds-icon_container slds-combobox__input-entity-icon slds-icon-custom-24">
+						<svg className="slds-icon slds-icon_small" aria-hidden="true">
+						<use xlinkHref="{!URLFOR($Asset.SLDS, 'assets/icons/custom-sprite/svg/symbols.svg#custom24')}"></use>
+						</svg>
+						<span className="slds-assistive-text">Project</span>
+					</span>
+					<input type="text"
+						maxlength="255" 
+						size="20"
+						className="slds-input slds-combobox__input slds-combobox__input-value" 
+						value={this.state.selectedProject.Name} 
+						style={{caretColor: "transparent", paddingLeft: "2.25rem", boxShadow: "inset 0 0 0 2px #fff, inset 0 0 0 3px #dddbda", minWidth: "192.4px"}}/>
+					<button onClick={e => {
+						e.preventDefault();
+						document.querySelectorAll('[id*="selectedProjectId"]').forEach(el => el.value = null);
+						this.setState({ selectedProject: null });
+					}} className="slds-button slds-button_icon slds-input__icon slds-input__icon_right">
+						<svg className="slds-button__icon" aria-hidden="true">
+						<use xlinkHref="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+						</svg>
+					</button>
+				</div>
+			) : (
+				<div className={`slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right requiredInput${this.state.projectError ? ' slds-has-error' : ''}`} role="none">
+					<div className="requiredBlock" />
+					<input type="text" 
+						maxlength="255" 
+						size="20"
+						className="slds-input slds-combobox__input" 
+						id="combobox-id-1" 
+						aria-autocomplete="list" 
+						aria-controls="listbox-id-1" 
+						autoComplete="off" 
+						role="textbox" 
+						placeholder="Search..." 
+						value={this.state.searchText} 
+						onFocus={() => this.openDropDown()} 
+						onChange={e => this.handleSearch(e)}
+						stlye={{minWidth: "192.4px"}}/>
+					<span className="slds-icon_container slds-icon-utility-search slds-input__icon slds-input__icon_right">
+						<svg className="slds-icon slds-icon slds-icon_x-small slds-icon-text-default" aria-hidden="true">
+							<use xlinkHref="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+						</svg>
+					</span>
+				</div>
+			)
+		);
+
+		NewProjectField = (field, stateField, stateFieldValue, required) => (
+			<div className="slds-grid slds-gutters_small full cols-2 forcePageBlockSectionRow">
+				<div className="slds-col slds-grid slds-has-flexi-truncate  full forcePageBlockItem forcePageBlockItemView" role="listitem">
+					<div className={`slds-form-element${this.state.newProjectError && required && !stateFieldValue ? "  slds-has-error" : ""}`} role="listitem">
+						<label className="slds-form-element__label">{required ? <abbr className="slds-required" title="required">*</abbr> : null}{field}</label>
+						<div className="slds-form-element__control">
+							<input type="text" aria-invalid="true" className="slds-input" value={stateFieldValue} onChange={e => this.setState({ [stateField]: e.target.value })}/>
+						</div>
+						{this.state.newProjectError && required && !stateFieldValue ? 
+							<div className="slds-form-element__help form-element__help">This field is required</div> 
+						: null}
+					</div>
+				</div>
+				<div className="slds-col slds-grid slds-has-flexi-truncate  full forcePageBlockItem forcePageBlockItemView" role="listitem">
+				</div>
+			</div>
+		);
+
+		createNewProject(e) {
+			e.preventDefault();
+			if (!this.state.newProjectName || !this.state.newProjectStreet || !this.state.newProjectCity || !this.state.newProjectState || !this.state.newProjectZip) {
+				this.setState({ newProjectError: true });
+			} else {
+				const newProjectJSON = JSON.stringify({
+					Name: this.state.newProjectName,
+					Street__c: this.state.newProjectStreet,
+					City__c: this.state.newProjectCity,
+					State__c: this.state.newProjectState,
+					Zip__c: this.state.newProjectZip
+				});
+
+				const thisComponent = this;
+
+				QuoteAccountController.insertNewProject(
+					newProjectJSON,
+					function(result, event) {
+						if (event.status) {
+							thisComponent.selectProject(result);
+						} else {
+							console.log(`event type: ${event.type}, event message: ${event.message}, event stack trace: ${event.where}`);
+						}
+					},
+					{ buffer: false }
+				);
+			}
+		}
+
+		NewProjectModal = () => (
+			this.state.isModalOpen ? (
+				<div className="modal-container">
+					<section role="dialog" tabindex="-1" className="slds-modal slds-fade-in-open slds-modal_small" aria-modal="true" >
+						<div className="slds-modal__container">
+							<header className="slds-modal__header">
+								<button onClick={e => {
+									e.preventDefault();
+									this.setState({ isModalOpen: false });
+								}} className="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+									<svg className="slds-button__icon slds-button__icon_large" aria-hidden="true">
+									<use xlinkHref="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+									</svg>
+									<span className="slds-assistive-text">Close</span>
+								</button>
+								<h2 className="slds-modal__title slds-hyphenate">New Project</h2>
+							</header>
+							<div className="slds-modal__content slds-p-around_medium">
+								<h3 className="slds-section__title slds-theme--shade primaryPaletteBorder test-id__section-header-container">
+									<span className="test-id__section-header-title section-header-title slds-p-horizontal--small slds-truncate">Information</span>
+								</h3>
+								<div className="slds-form slds-form_stacked slds-is-editing" role="list">
+									<div className="slds-grid slds-gutters_small full cols-2 forcePageBlockSectionRow">
+										<div className="slds-col slds-grid slds-has-flexi-truncate  full forcePageBlockItem forcePageBlockItemView" role="listitem">
+											<div className={`slds-form-element${this.state.newProjectError && !this.state.newProjectName ? "  slds-has-error" : ""}`} role="listitem">
+												<label className="slds-form-element__label">
+													<abbr className="slds-required" title="required">*</abbr>Project Name</label>
+												<div className="slds-form-element__control">
+													<input type="text" required="" className="slds-input" onChange={e => this.setState({ newProjectName: e.target.value })} />
+												</div>
+												{this.state.newProjectError && !this.state.newProjectName ? 
+													<div className="slds-form-element__help form-element__help">This field is required</div> 
+												: null}
+											</div>
+										</div>
+										<div className="slds-col slds-grid slds-has-flexi-truncate  full forcePageBlockItem forcePageBlockItemView" role="listitem">
+											<div className="slds-form-element slds-grow slds-hint-parent override--slds-form-element">
+												<div className="test-id__field-label-container slds-form-element__label">
+													<span className="test-id__field-label">Owner</span>
+												</div>
+												<div className="slds-form-element__control slds-grid itemBody">
+													<span className="test-id__field-value slds-form-element__static slds-grow">
+														<span className="uiOutputText forceOutputLookup">{this.state.currentUsername}</span>
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+									{this.NewProjectField("Street", "newProjectStreet", this.state.newProjectStreet, true)}
+									{this.NewProjectField("City", "newProjectCity", this.state.newProjectCity, true)}
+									{this.NewProjectField("State", "newProjectState", this.state.newProjectState, true)}
+									{this.NewProjectField("Zip", "newProjectZip", this.state.newProjectZip, true)}
+								</div>
+							</div>
+							<footer className="slds-modal__footer">
+								<button onClick={e => {
+									e.preventDefault();
+									this.setState({ isModalOpen: false });
+								}} className="slds-button slds-button_neutral">Cancel</button>
+								<button onClick={e => this.createNewProject(e)} className="slds-button slds-button_brand">Save</button>
+							</footer>
+						</div>
+					</section>
+					<div className="slds-backdrop slds-backdrop_open"></div>
+				</div>
+			) : null
+		);
+
+		NewProjectButton = () => (
+			<li onClick={() => this.setState({ isModalOpen: true, isDropDownOpen: false })} role="presentation" className="slds-listbox__item">
+				<div className="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_term" role="option">
+					<span className="slds-media__figure slds-listbox__option-icon">
+						<span className="slds-icon_container slds-icon-utility-add">
+							<svg className="slds-icon slds-icon_x-small slds-icon-text-default" aria-hidden="true">
+								<use xlinkHref="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#add')}"></use>
+							</svg>
+						</span>
+					</span>
+					<span className="slds-media__body">
+						<span className="slds-listbox__option-text slds-listbox__option-text_entity">New Project</span>
+					</span>
+				</div>
+			</li>
+		);
+
+		render() {
+			return (
+				<div className="slds-scope">
+					{this.NewProjectModal()}
+					<div className="pbSubsection">
+						<table className="detailList" border="0" cellpadding="0" cellspacing="0">
+							<tbody>
+								<tr>
+									<th className="labelCol vfLabelColTextWrap  first " scope="row">
+										<label>Project</label>
+									</th>
+									<td ref={this.dropDownRef} className="dataCol  first "  style={{width: "336px"}}>
+										{this.DisplaySearchOrSelectedProject()}
+										{this.state.projectError ? <div className="errorMsg"  style={{position: "absolute"}}><strong>Error:</strong> You must select a project</div> : null}
+										<div id="dropDownToggler" className={`slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click${this.state.isDropDownOpen ? ' slds-is-open' : ''}`} aria-expanded="false" aria-haspopup="listbox" role="combobox">
+											
+											<div id="listbox-id-1" className="slds-dropdown slds-dropdown_length-with-icon-7 slds-dropdown_fluid" role="listbox">
+												<ul className="slds-listbox slds-listbox_vertical" role="presentation">
+													{DisplayRecentOrSearch(this.state.searchText)}
+													{this.state.searchText ? 
+														this.ProjectLookupItemList(this.state.searchResults) 
+														: this.ProjectLookupItemList(this.state.recentProjects)}
+													{this.NewProjectButton()}
+												</ul>
+											</div>
+										</div>
+									</td>
+									<td className="labelCol empty"></td>
+									<td className="dataCol empty"></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			);
+		}
+	}
+
+	const DisplayRecentOrSearch = searchTextValue => (
+		searchTextValue ? (
+			<li style={{padding: ".25rem .75rem"}}>
+				<div style={{display: "flex", flexdirection: "row"}}>
+					<span className="slds-media__figure slds-listbox__option-icon">
+						<span className="slds-icon_container slds-icon-utility-search" title="Search for term: ">
+							<svg className="slds-icon slds-icon_x-small slds-icon-text-default" aria-hidden="true">
+								<use xlinkHref="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+							</svg>
+							<span className="slds-assistive-text">Search for term: </span>
+						</span>
+					</span>
+					<span className="slds-media__body">
+						<span className="slds-listbox__option-text slds-listbox__option-text_entity">"{searchTextValue}" in Projects</span>
+					</span>
+				</div>
+			</li>
+		) : (
+			<li style={{padding: ".25rem .75rem"}}>
+				<div>
+					<span className="slds-media__body">
+						<span className="slds-listbox__option-text slds-listbox__option-text_entity">Recent Projects</span>
+					</span>
+				</div>
+			</li>
+		)
+	);
+
+	ReactDOM.render(
+		<ProjectLookupField />,
+		document.getElementById('projectLookupContainer')
+	);
+</script>
+</apex:page>

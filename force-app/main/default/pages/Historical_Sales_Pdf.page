@@ -1,0 +1,274 @@
+<apex:page StandardController="Historical_Sales__c" renderAs="pdf" standardStylesheets="true" applyHtmlTag="true" applyBodyTag="false"
+    showHeader="false" sidebar="false" extensions="pdfhistoricalsalescntrl">
+
+    <head>
+        <STYLE>
+            @page {
+                margin-top: 0.2in;
+                margin-bottom: 0.8in;
+                @bottom-left {
+                    content: element(footer);
+                }
+            }
+
+            div.footer {
+                display: block;
+                position: running(footer);
+            }
+
+            .styletab {
+                width: 100%;
+                height: 100%;
+                margin-top: -5px auto;
+                collapse;
+                margin-top: -5px;
+            }
+
+            .bodystyle {
+                border: 1px solid black;
+                padding: 0px;
+            }
+
+            .fontstyle {
+                font-size: 14px;
+                font-family: sans-serif;
+            }
+
+            .bold {
+                font-weight: bold;
+                font-family: sans-serif;
+            }
+
+            tr {
+                page-break-inside: avoid;
+            }
+        </STYLE>
+    </head>
+    <!-- <body class="bodystyle">-->
+
+    <body>
+        <!--<div>
+<apex:outputtext value="{!Order__c.Account__r.Distributor__r.Distributor_Logo__c}" escape="false" />
+</div>-->
+        <div class="footer" style="font-size: 11.5px; font-family: sans-serif; padding: 20px;">IB Roof Systems&nbsp;&nbsp;|&nbsp;&nbsp;506 E. Dallas Road&nbsp;&nbsp;|&nbsp;&nbsp;Grapevine&nbsp;&nbsp;|&nbsp;&nbsp;Texas&nbsp;&nbsp;|&nbsp;&nbsp;76051&nbsp;&nbsp;|&nbsp;&nbsp;800.426.1626&nbsp;&nbsp;|&nbsp;&nbsp;www.IBroof.com&nbsp;&nbsp;|&nbsp;&nbsp;credit@IBroof.com</div>
+        <div style="padding:0px;position:absolute;width:99.5%">
+            <div>
+                <table width="100%">
+                    <tr>
+                        <td width="30%">
+                            <apex:image value="{!URLFOR($Resource.logo)}" style="z-index:-1;width:100%;" />
+                        </td>
+                        <td width="40%"></td>
+                        <td width="30%" style="font-family: sans-serif;">
+                            <div style="padding-left: 3px; padding-bottom: 7px;">
+                                <apex:outputText value="INVOICE# {!Historical_Sales__c.Invoice_Number__c}" />
+                            </div>
+                            <b class="bold" style="font-size:14px;font-family: sans-serif; font-weight: bold;">Page:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b>1
+                            <br/>
+                            <b style="font-size:14px;font-family: sans-serif;">Rep:&nbsp;&nbsp;</b>
+                            <apex:outputText value=" {!Historical_Sales__c.Rep__c}" />
+                            <br/>
+                            <br/>
+                            <b style="font-family: sans-serif;">Order Date &nbsp;&nbsp;&nbsp;</b>
+                            <apex:outputText value="{0,date,MM/dd/yyyy}">
+                                <apex:param value="{!Historical_Sales__c.Order_Date__c}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <br/>
+            <br/>
+            <br/>
+            <div>
+                <table width="100%" style="padding-bottom: 45px;">
+                    <tr>
+                        <td width="60%" style="font-family: sans-serif;">
+                            <b>Sold To:</b>
+                            <br />
+                            <apex:outputText value=" {!Historical_Sales__c.Customer_Account__r.Name}" />
+                        </td>
+                        <td width="25.5%" style="font-family: sans-serif; font-size: 14px;">
+                            <span style="padding-top: 5px;">Ship To:</span>
+                            <br />
+                            <apex:outputText value=" {!Historical_Sales__c.Customer_Account__r.Name}" />
+                            <br/>
+                            <apex:outputText value=" {!Historical_Sales__c.Customer_Account__r.ShippingStreet}" />
+                            <br/>
+                            <apex:outputText value=" {!Historical_Sales__c.Customer_Account__r.ShippingCity}" />,
+                            <apex:outputText value=" {!Historical_Sales__c.Customer_Account__r.ShippingState}" />
+                            <br/>
+                            <apex:outputText value=" {!Historical_Sales__c.Customer_Account__r.ShippingPostalCode}" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <table class="t1" style="margin-top:10px;margin-bottom:15px;margin-left:0px;font-size:14px;text-align:left;border-collapse:collapse;width:735px; font-family: sans-serif;">
+                <tr style="border:1px solid black;">
+                    <th width="14.667%">Sales No</th>
+                    <th width="16.667%">Customer</th>
+                    <th width="16.667%">Ship VIA</th>
+                    <th width="18.667%">Date Shipped</th>
+                    <th width="16.667%">Terms</th>
+                    <th width="16.667%">Invoice Date</th>
+                </tr>
+
+                <tr style="border:1px solid black;margin-top:400px; font-family: sans-serif;">
+                    <td>
+                        <apex:outputText value=" {!Historical_Sales__c.Order_Number__c}" />
+                    </td>
+                    <td>
+                        <b>P.O.</b>
+                        <apex:outputText value=" {!Historical_Sales__c.Customer_PO_Number__c}" />
+                    </td>
+                    <td>
+                        <apex:outputText value=" {!Historical_Sales__c.Ship_Via__c}" />
+                    </td>
+                    <td>
+                        <apex:outputText value=" {!Historical_Sales__c.Ship_Date__c}" />
+                    </td>
+                    <td>
+                        <apex:outputText value=" {!Historical_Sales__c.Terms__c}" />
+                    </td>
+                    <td>
+                        <apex:outputText value=" {!Historical_Sales__c.Invoice_Date__c}" />
+                    </td>
+                </tr>
+            </table>
+
+            <br/>
+            <br/>
+            <br/>
+
+            <apex:image value="{!URLFOR($Resource.invoicepdfimage1flipped)}" style="z-index:-1;width:100%;height:55px;" />
+            <table class="t1" style="margin-top:-48px;margin-left:0px;font-size:13px;text-align:center;border-collapse:collapse;width:100%;">
+                <tr style="border:1px solid black; font-family: sans-serif;">
+                    <th style="color:white; width: 7%;">Qty
+                        <br/>Ord.</th>
+                    <th style="color:white; width: 7%;">Qty.
+                        <br/>Ship</th>
+                    <th style="color:white; width: 7%;">Back
+                        <br/>
+                        <span style="padding-right: 5px;">Ord</span>
+                    </th>
+                    <th style="color:white; width: 10%;">Item No.</th>
+                    <th style="color:white; width: 31%;">Description</th>
+                    <th style="color:white; width: 10%;">Unit Price</th>
+                    <th style="color:white; width: 20%;">Extended Price</th>
+                </tr>
+
+                <apex:repeat value="{!hsdList}" var="hsdItem">
+                    <tr style="border:1px solid black;margin-top:400px; font-family: sans-serif;">
+                        <td>
+                            <apex:outputText value="{!hsdItem.Quantity_Ordered__c}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!hsdItem.Quantity_Shipped__c}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!hsdItem.Quantity_BackOrdered__c}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!hsdItem.Item_Code__c}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!hsdItem.Item_Description__c}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!hsdItem.Unit_Price__c}" />
+                        </td>
+                        <td>
+                            <apex:outputText value="{!hsdItem.Extended_Price__c}" />
+                        </td>
+
+                    </tr>
+                </apex:repeat>
+            </table>
+
+
+            <div>
+                <apex:image value="{!URLFOR($Resource.invoicepdfimage2)}" style="z-index:-1;width:100%;height:50px;margin-top:10px; border-bottom: 2px solid black; image-orientation: 180deg;"
+                />
+                <br/>
+                <table width="100%">
+                    <tr>
+                        <td width="60%">
+                            <div>
+                                <p style="font-size:12px;font-family: sans-serif; font-weight: bold;">
+                                    THIS INVOICE DUE BY
+                                    <apex:outputText value=" {!Historical_Sales__c.Invoice_Due_Date__c}" />
+                                </p>
+                                <p style="font-size:12px;font-family: sans-serif; font-weight: bold;">
+                                    1% Material Discount of $1.08 available if paid by 11/26/2018 ALL
+                                </p>
+                                <p style="font-size:12px;font-family: sans-serif; font-weight: bold;">
+                                    PAST DUE INVOICES ARE SUBJECT TO A 2% LATE CHARGE.
+                                </p>
+                                <br/>
+                                <br/>
+                                <br/>
+                                <br/>
+                                <br/>
+                                <br/>
+                            </div>
+                        </td>
+                        <td width="35%">
+                            <table border="1px solid black" style="width:100%;margin:0px 0px 0px 0px;text-align:center;border-collapse:collapse;position:relative;"
+                                class="footertable">
+                                <tr style="border:1px solid black;margin:0px 0px 0px 0px; font-size: 13px;">
+                                    <th style="border:1px solid black;margin:0px 0px 0px 0px; font-family: sans-serif; text-align: right; padding-right: 10px; padding-top: 3px; padding-bottom: 3px;">Sales Amount</th>
+                                    <td style="border:1px solid black;margin:0px 0px 0px 0px; font-family: sans-serif;">
+                                        <apex:outputText value=" {!Historical_Sales__c.Invoice_Total__c}" />
+                                    </td>
+                                </tr>
+                                <tr style="border:1px solid black; font-size: 13px;">
+                                    <th style="border:1px solid black;font-family: sans-serif; text-align: right; padding-right: 10px; padding-top: 3px; padding-bottom: 3px;">Freight:</th>
+                                    <td style="border:1px solid black;font-family: sans-serif;">
+                                        <apex:outputText value=" {!Historical_Sales__c.Freight_Amount__c}" />
+                                    </td>
+                                </tr>
+                                <tr style="border:1px solid black; font-size: 13px;">
+                                    <th style="border:1px solid black;font-family: sans-serif; text-align: right; padding-right: 10px; padding-top: 3px; padding-bottom: 3px;">Less Freight Discount</th>
+                                    <td style="border:1px solid black;font-family: sans-serif;">
+                                        <apex:outputText value=" {!Historical_Sales__c.Less_Freight_Discount__c}" />
+                                    </td>
+                                </tr>
+                                <tr style="border:1px solid black;margin:0px 0px 0px 0px;; font-size: 13px;">
+                                    <th style="border:1px solid black;margin:0px 0px 0px 0px;font-family: sans-serif; text-align: right; padding-right: 10px; padding-top: 3px; padding-bottom: 3px;">Taxable Total:</th>
+                                    <td style="border:1px solid black;margin:0px 0px 0px 0px;font-family: sans-serif;">
+                                        <apex:outputText value=" {!Historical_Sales__c.Taxable_Total__c}" />
+                                    </td>
+                                </tr>
+                                <tr style="border:1px solid black; font-size: 13px;">
+                                    <th style="border:1px solid black;font-family: sans-serif; text-align: right; padding-right: 10px; padding-top: 3px; padding-bottom: 3px;">Sales Tax:</th>
+                                    <td style="border:1px solid black;font-family: sans-serif;">
+                                        <apex:outputText value=" {!Historical_Sales__c.Sales_Tax__c}" />
+                                    </td>
+                                </tr>
+                                <tr style="border:1px solid black; font-size: 13px;">
+                                    <th style="border:1px solid black;font-family: sans-serif; text-align: right; padding-right: 10px; padding-top: 3px; padding-bottom: 3px;">Invoice Total:</th>
+                                    <td style="border:1px solid black;font-family: sans-serif;">
+                                        <apex:outputText value="{!Historical_Sales__c.Taxable_Total__c + Historical_Sales__c.Sales_Tax__c}" />
+                                    </td>
+                                </tr>
+                                <tr style="border:1px solid black; font-size: 13px;">
+                                    <th style="border:1px solid black;font-family: sans-serif; text-align: right; padding-right: 10px; padding-top: 3px; padding-bottom: 3px;">Payment</th>
+                                    <td style="border:1px solid black;font-family: sans-serif;">0.00</td>
+                                </tr>
+                                <tr style="border:1px solid black; font-size: 13px;">
+                                    <th style="border:1px solid black;font-family: sans-serif; text-align: right; padding-right: 10px; padding-top: 3px; padding-bottom: 3px;">Total Due</th>
+                                    <td style="border:1px solid black;font-family: sans-serif;">
+                                        <apex:outputText value="{!Historical_Sales__c.Taxable_Total__c + Historical_Sales__c.Sales_Tax__c}" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+
+    </body>
+</apex:page>
